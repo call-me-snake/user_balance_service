@@ -1,0 +1,19 @@
+version: '3.5'
+
+services:
+
+ adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+ db:
+    image: postgr_balance_storage_img
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: accounts
+      POSTGRES_USER: postgres

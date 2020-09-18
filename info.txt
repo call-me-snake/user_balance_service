@@ -1,0 +1,2 @@
+//mockgen
+//mockgen "-source=internal/convert/convert.go" "-destination=internal/convert/mock/mock_updater.go"
