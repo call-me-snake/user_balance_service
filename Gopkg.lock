@@ -18,6 +18,14 @@
   version = "v1.8.0"
 
 [[projects]]
+  digest = "1:a2cff208d4759f6ba1b1cd228587b0a1869f95f22542ec9cd17fff64430113c7"
+  name = "github.com/jessevdk/go-flags"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c6ca198ec95c841fdb89fc0de7496fed11ab854e"
+  version = "v1.4.0"
+
+[[projects]]
   digest = "1:e505c26e1b30391dd9cd96727f78cd667bcf10fef7c1548ca754d4f50905a55e"
   name = "github.com/jinzhu/gorm"
   packages = [
@@ -106,14 +114,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:8530193cca5ee0827279926f5612e87cec7c08bb14bd980a10bf889d3669044a"
+  digest = "1:0231b24e1bf706e119f1b3a659bc8bb481b8e132514b26b82687cae63a526028"
   name = "golang.org/x/sys"
   packages = [
     "internal/unsafeheader",
     "unix",
   ]
   pruneopts = "UT"
-  revision = "efd3b9a0ff205c921c51961c1c9bb8728bd0ce1b"
+  revision = "af09f7315aff1cbc48fb21d21aa55d67b4f914c5"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -121,6 +129,7 @@
   input-imports = [
     "github.com/golang/mock/gomock",
     "github.com/gorilla/mux",
+    "github.com/jessevdk/go-flags",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
     "github.com/labstack/gommon/log",

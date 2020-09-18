@@ -30,6 +30,10 @@ type transferSumResponce struct {
 	Message string `json:"Message"`
 }
 
+type operationsInfoRequest struct {
+	FilterParams map[string]interface{} `json:"Params"`
+}
+
 type errorResponce struct {
 	Message string `json:"Message"`
 	ErrCode int    `json:"ErrCode"`

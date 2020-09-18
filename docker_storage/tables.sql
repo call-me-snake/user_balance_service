@@ -11,7 +11,8 @@ CREATE TABLE logs
 (
     account_id INTEGER REFERENCES accounts ON DELETE RESTRICT,
     delta NUMERIC,
-    log_message TEXT,
+    log_user_message TEXT,
+    log_internal_message TEXT,
     operation_completed BOOLEAN,
     created_at TIMESTAMP 
 );

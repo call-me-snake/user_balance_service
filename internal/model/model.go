@@ -30,13 +30,25 @@ type CustomErr struct {
 //ITransactionLogger - интерфейс для логирования успешных транзакций
 type ITransactionLogger interface {
 	CreateNewLog(log Log) error
+	GetUserLogsFiltered(filter map[string]interface{}) (logs []UserLog, err error, wrongInput bool)
 }
 
 //Log - структура для хранения логов по транзакциям
 type Log struct {
+	UserLog
+	LogInternalMessage string `gorm:"column:log_internal_message"`
+}
+
+//UserLog - структура для хранения пользовательской информации по транзакциям
+type UserLog struct {
 	AccountId          int       `gorm:"column:account_id"`
 	Delta              float64   `gorm:"column:delta"`
-	LogMessage         string    `gorm:"column:log_message"`
+	LogUserMessage     string    `gorm:"column:log_user_message"`
 	OperationCompleted bool      `gorm:"column:operation_completed"`
 	CreatedAt          time.Time `gorm:"column:created_at"`
+}
+
+// TableName - declare table name for GORM
+func (UserLog) TableName() string {
+	return "logs"
 }

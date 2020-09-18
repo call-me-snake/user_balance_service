@@ -26,6 +26,7 @@ func (c *Connector) executeHandlers(accStorage model.IAccountsStorage, logger mo
 	c.router.HandleFunc("/account/info/{id:[0-9]+}", accountById(accStorage)).Methods("GET")
 	c.router.HandleFunc("/account/change-balance", changeAccBalance(accStorage, logger)).Methods("PUT")
 	c.router.HandleFunc("/account/transfer", transferSum(accStorage, logger)).Methods("PUT")
+	c.router.HandleFunc("/account/operations", operationsInfo(logger)).Methods("POST")
 }
 
 //Start запуск http сервера
