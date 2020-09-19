@@ -15,11 +15,29 @@ var (
 )
 
 const rubCurrency = "RUB"
+const updateDataInterval time.Duration = time.Hour
 
-//VerifyOrUpdateConvertData - получает структуру данных, необходимую для конвертации валют
-func (UpdaterStruct) VerifyOrUpdateConvertData() (ConvertData, error) {
+//Updater - содержит метод VerifyOrUpdateConvertData. Нужен для mock, чтобы не вызывать http
+type Updater interface {
+	GetConvertData() (ConvertData, error)
+}
+
+//UpdaterStruct - структура для реализации Updater
+type UpdaterStruct struct{}
+
+//ConvertData - структура для хранения коэффициэнтов конвертирования
+type ConvertData struct {
+	fillingTime time.Time
+	Base        string             `json:"base"`
+	Date        string             `json:"date"`
+	Rates       map[string]float64 `json:"rates"`
+}
+
+//GetConvertData - получает структуру данных, необходимую для конвертации валют
+//TODO название
+func (UpdaterStruct) GetConvertData() (ConvertData, error) {
 	t := convertDataStorage.fillingTime
-	if time.Since(t) > time.Hour {
+	if time.Since(t) > updateDataInterval {
 		req, _ := http.NewRequest(http.MethodGet, coursesStorerUrl, nil)
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -38,27 +56,13 @@ func (UpdaterStruct) VerifyOrUpdateConvertData() (ConvertData, error) {
 	return convertDataStorage, nil
 }
 
-//ConvertData - структура для хранения коэффициэнтов конвертирования
-type ConvertData struct {
-	fillingTime time.Time
-	Base        string             `json:"base"`
-	Date        string             `json:"date"`
-	Rates       map[string]float64 `json:"rates"`
-}
-
-//Updater - содержит метод VerifyOrUpdateConvertData. Нужен для mock, чтобы не вызывать http
-type Updater interface {
-	VerifyOrUpdateConvertData() (ConvertData, error)
-}
-type UpdaterStruct struct{}
-
 //ConvertToCurrency - конвертирует сумму в выбранную валюту
 func ConvertToCurrency(balance float64, currency string, updater Updater) (balanceInCurrency float64, err error) {
 	if currency == "" {
 		return 0, errors.New("convert.ConvertToCurrency: Пустая строка на входе")
 	}
 	var data ConvertData
-	if data, err = updater.VerifyOrUpdateConvertData(); err != nil {
+	if data, err = updater.GetConvertData(); err != nil {
 		return 0, fmt.Errorf("convert.ConvertToCurrency: %s", err.Error())
 	}
 	if data.Base != rubCurrency {

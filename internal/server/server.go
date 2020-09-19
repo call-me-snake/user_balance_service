@@ -21,7 +21,7 @@ func New(addr string) *Connector {
 	return c
 }
 
-func (c *Connector) executeHandlers(accStorage model.IAccountsStorage, logger model.ITransactionLogger) {
+func (c *Connector) executeHandlers(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) {
 	c.router.HandleFunc("/alive", aliveHandler).Methods("GET")
 	c.router.HandleFunc("/account/info/{id:[0-9]+}", accountById(accStorage)).Methods("GET")
 	c.router.HandleFunc("/account/change-balance", changeAccBalance(accStorage, logger)).Methods("PUT")
@@ -30,7 +30,7 @@ func (c *Connector) executeHandlers(accStorage model.IAccountsStorage, logger mo
 }
 
 //Start запуск http сервера
-func (c *Connector) Start(accStorage model.IAccountsStorage, logger model.ITransactionLogger) error {
+func (c *Connector) Start(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) error {
 	c.executeHandlers(accStorage, logger)
 	err := http.ListenAndServe(c.address, c.router)
 	return fmt.Errorf("server.Start: %v", err)

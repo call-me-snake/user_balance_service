@@ -25,7 +25,7 @@ func aliveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //accountById - возврат информации об аккаунте
-func accountById(accStorage model.IAccountsStorage) http.HandlerFunc {
+func accountById(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ids := mux.Vars(r)["id"]
 		id, err := strconv.Atoi(ids)
@@ -34,9 +34,9 @@ func accountById(accStorage model.IAccountsStorage) http.HandlerFunc {
 			return
 		}
 
-		acc, custErr := accStorage.GetAccount(id)
+		acc, custErr := accStorage.GetAccountBalance(id)
 		if custErr != nil {
-			if custErr.AccountNotExists {
+			if custErr.ErrCode == model.AccountNotExistsCode {
 				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
 			} else {
 				makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
@@ -64,7 +64,7 @@ func accountById(accStorage model.IAccountsStorage) http.HandlerFunc {
 
 //changeAccBalance - выполняет пополнение аккаунта на delta
 //Пример тела запроса: {"Id":1,"Delta":-200}
-func changeAccBalance(accStorage model.IAccountsStorage, logger model.ITransactionLogger) http.HandlerFunc {
+func changeAccBalance(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		changeRequest := &changeAccBalanceRequest{}
 		err := json.NewDecoder(r.Body).Decode(changeRequest)
@@ -91,7 +91,7 @@ func changeAccBalance(accStorage model.IAccountsStorage, logger model.ITransacti
 				},
 			}
 			if custErr != nil {
-				if custErr.AccountNotExists {
+				if custErr.ErrCode == model.AccountNotExistsCode {
 					return
 				} else {
 					operationLog.LogInternalMessage = custErr.Err.Error()
@@ -106,10 +106,10 @@ func changeAccBalance(accStorage model.IAccountsStorage, logger model.ITransacti
 		}()
 
 		if !isChanged && custErr != nil {
-			if custErr.AccountNotExists {
+			if custErr.ErrCode == model.AccountNotExistsCode {
 				userMessage = accountNotFoundMessage
 				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
-			} else if custErr.InsufficientFunds {
+			} else if custErr.ErrCode == model.InsufficientFundsCode {
 				userMessage = insufficientFundsMessage
 				makeErrResponce(insufficientFundsMessage, http.StatusForbidden, w)
 			} else {
@@ -134,7 +134,7 @@ func changeAccBalance(accStorage model.IAccountsStorage, logger model.ITransacti
 
 //transferSum - выполняет перевод суммы между аккаунтами
 //пример тела запроса: {"Id1":1,"Id2":3,"Delta":-20}
-func transferSum(accStorage model.IAccountsStorage, logger model.ITransactionLogger) http.HandlerFunc {
+func transferSum(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		transferRequest := &transferSumRequest{}
 		err := json.NewDecoder(r.Body).Decode(transferRequest)
@@ -173,7 +173,7 @@ func transferSum(accStorage model.IAccountsStorage, logger model.ITransactionLog
 				},
 			}
 			if custErr != nil {
-				if custErr.AccountNotExists {
+				if custErr.ErrCode == model.AccountNotExistsCode {
 					return
 				} else {
 					operationLog1.LogInternalMessage, operationLog2.LogInternalMessage = custErr.Err.Error(), custErr.Err.Error()
@@ -193,10 +193,10 @@ func transferSum(accStorage model.IAccountsStorage, logger model.ITransactionLog
 		}()
 
 		if !isTransfered && custErr != nil {
-			if custErr.AccountNotExists {
+			if custErr.ErrCode == model.AccountNotExistsCode {
 				userMessage = accountNotFoundMessage
 				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
-			} else if custErr.InsufficientFunds {
+			} else if custErr.ErrCode == model.InsufficientFundsCode {
 				userMessage = insufficientFundsMessage
 				makeErrResponce(insufficientFundsMessage, http.StatusForbidden, w)
 			} else {

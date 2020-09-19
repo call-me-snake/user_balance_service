@@ -2,9 +2,15 @@ package model
 
 import "time"
 
-//IAccountsStorage - интерфейс для работы с балансом пользователей
-type IAccountsStorage interface {
-	GetAccount(id int) (*Account, *CustomErr)
+const (
+	DefaultErrCode        = 0
+	InsufficientFundsCode = 1
+	AccountNotExistsCode  = 2
+)
+
+//IBalanceInfoStorage - интерфейс для работы с балансом пользователей
+type IBalanceInfoStorage interface {
+	GetAccountBalance(id int) (*BalanceInfo, *CustomErr)
 	//ChangeAccountBalance: баланс меняется по принципу newBalance = curBalance + delta
 	ChangeAccountBalance(id int, delta float64) (isChanged bool, err *CustomErr)
 	//TransferSumBetweenAccounts: delta может быть как положительной, так и отрицательной
@@ -12,19 +18,22 @@ type IAccountsStorage interface {
 	TransferSumBetweenAccounts(id1, id2 int, delta float64) (isTransferred bool, err *CustomErr)
 }
 
-//Account - структура для хранения информации по балансу пользователя
-type Account struct {
+//BalanceInfo - структура для хранения информации по балансу пользователя
+type BalanceInfo struct {
 	AccountId int     `gorm:"primary_key;column:account_id"`
 	Balance   float64 `gorm:"column:balance"`
 }
 
-//CustomErr - кастомный тип ошибки, возвращаемый методами интерфейса IAccountsStorage.
-//Содержит флаг InsufficientFunds, указывающий на недостаток средств на счету для проведения операции
-//Содержит флаг AccountNotExists, поднимаемый при ошибках базы вида "record not found"
+// TableName - declare table name for GORM
+func (BalanceInfo) TableName() string {
+	return "accounts"
+}
+
+//CustomErr - кастомный тип ошибки, возвращаемый методами интерфейса IBalanceInfoStorage.
+//Содержит переменную ErrCode, указывающую на тип ошибки
 type CustomErr struct {
-	Err               error
-	InsufficientFunds bool
-	AccountNotExists  bool
+	Err     error
+	ErrCode int
 }
 
 //ITransactionLogger - интерфейс для логирования успешных транзакций
