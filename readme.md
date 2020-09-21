@@ -2,7 +2,7 @@
 
 *Сервис работает с балансом пользователей и имеет ручки:*
 
--   Получение информации о балансе
+-   Получение информации о балансе<br/>
 Request:
 [GET] /account/balance/info/{id:[0-9]+}?currency=CUR
 
@@ -21,7 +21,7 @@ Responce:
 }
 </pre>
 
--   Изменение баланса
+-   Изменение баланса<br/>
 Request:
 [POST] /account/balance/change
 <pre>
@@ -45,7 +45,7 @@ Responce:
 }
 </pre>
 
--   Перевод между счетами
+-   Перевод между счетами<br/>
 Request:
 [POST] /account/balance/transfer
 <pre>
@@ -70,7 +70,7 @@ Responce:
 }
 </pre>
 
--   История транзакций
+-   История транзакций<br/>
 Request:
 [POST] /account/balance/history
 

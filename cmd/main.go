@@ -16,7 +16,7 @@ type envs struct {
 	AccountStorageConn string `long:"accstconn" env:"ACC_STORAGE" description:"Connection string to account storage database" default:"user=postgres password=example dbname=accounts sslmode=disable port=5432 host=localhost"`
 }
 
-//initConfig - получает переменные окружения с помощью envs (в перспективе может осуществлять их проверку)
+//initConfig - получает переменные окружения с помощью envs
 func initConfig() (model.Config, error) {
 	e := envs{}
 	c := model.Config{}
