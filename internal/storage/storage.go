@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/call-me-snake/user_balance_service/internal/model"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
@@ -12,16 +13,16 @@ import (
 //sleepDurationInSec - время пинга функции checkConnection в секундах
 const sleepDurationInSec = 5
 
-//Storage ...
-type Storage struct {
+//storage ...
+type storage struct {
 	database *gorm.DB
 	address  string
 }
 
-//New возвращает объект интерфейса IAccountsStorage (storage)
-func New(adress string) (*Storage, error) {
+//New возвращает объект интерфейса IBalanceInfoStorage (storage)
+func New(adress string) (model.IBalanceInfoStorage, error) {
 	var err error
-	db := &Storage{}
+	db := &storage{}
 	db.address = adress
 	db.database, err = gorm.Open("postgres", adress)
 	if err != nil {
@@ -38,7 +39,7 @@ func New(adress string) (*Storage, error) {
 }
 
 //ping (internal)
-func (db *Storage) ping() error {
+func (db *storage) ping() error {
 	//db.database.LogMode(true)
 	result := struct {
 		Result int
@@ -55,7 +56,7 @@ func (db *Storage) ping() error {
 }
 
 //checkConnection (internal)
-func (db *Storage) checkConnection() {
+func (db *storage) checkConnection() {
 	go func() {
 		for {
 			err := db.ping()

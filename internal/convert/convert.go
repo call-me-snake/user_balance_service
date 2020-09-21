@@ -7,36 +7,29 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/call-me-snake/user_balance_service/internal/model"
 )
 
 var (
-	convertDataStorage ConvertData
+	convertDataStorage model.ConvertData
 	coursesStorerUrl   = "https://api.exchangeratesapi.io/latest?base=RUB"
 )
 
 const rubCurrency = "RUB"
 const updateDataInterval time.Duration = time.Hour
 
-//Updater - содержит метод VerifyOrUpdateConvertData. Нужен для mock, чтобы не вызывать http
-type Updater interface {
-	GetConvertData() (ConvertData, error)
+//ConvertDataStorer - содержит метод GetConvertData. Нужен для mock, чтобы не вызывать http
+type ConvertDataStorer interface {
+	GetConvertData() (model.ConvertData, error)
 }
 
-//UpdaterStruct - структура для реализации Updater
-type UpdaterStruct struct{}
-
-//ConvertData - структура для хранения коэффициэнтов конвертирования
-type ConvertData struct {
-	fillingTime time.Time
-	Base        string             `json:"base"`
-	Date        string             `json:"date"`
-	Rates       map[string]float64 `json:"rates"`
-}
+//ConvertDataStorerStruct - структура для реализации Updater
+type ConvertDataStorerStruct struct{}
 
 //GetConvertData - получает структуру данных, необходимую для конвертации валют
-//TODO название
-func (UpdaterStruct) GetConvertData() (ConvertData, error) {
-	t := convertDataStorage.fillingTime
+func (c *ConvertDataStorerStruct) GetConvertData() (model.ConvertData, error) {
+	t := convertDataStorage.FillingTime
 	if time.Since(t) > updateDataInterval {
 		req, _ := http.NewRequest(http.MethodGet, coursesStorerUrl, nil)
 		resp, err := http.DefaultClient.Do(req)
@@ -51,18 +44,18 @@ func (UpdaterStruct) GetConvertData() (ConvertData, error) {
 		if err != nil {
 			return convertDataStorage, fmt.Errorf("convert.getConvertData: %v", err)
 		}
-		convertDataStorage.fillingTime = time.Now()
+		convertDataStorage.FillingTime = time.Now()
 	}
 	return convertDataStorage, nil
 }
 
 //ConvertToCurrency - конвертирует сумму в выбранную валюту
-func ConvertToCurrency(balance float64, currency string, updater Updater) (balanceInCurrency float64, err error) {
+func ConvertToCurrency(balance float64, currency string, storer ConvertDataStorer) (balanceInCurrency float64, err error) {
 	if currency == "" {
 		return 0, errors.New("convert.ConvertToCurrency: Пустая строка на входе")
 	}
-	var data ConvertData
-	if data, err = updater.GetConvertData(); err != nil {
+	var data model.ConvertData
+	if data, err = storer.GetConvertData(); err != nil {
 		return 0, fmt.Errorf("convert.ConvertToCurrency: %s", err.Error())
 	}
 	if data.Base != rubCurrency {

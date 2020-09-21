@@ -1,0 +1,29 @@
+services:
+
+ adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+ db:
+    image: postgr_balance_storage_img
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: accounts
+      POSTGRES_USER: postgres
+
+ balance-service:
+    image: user_balance_service_img
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      SERVER: :8000
+      ACC_STORAGE: "user=postgres password=example dbname=accounts sslmode=disable port=5432 host=db"
+    depends_on:
+      - db
+    command: /bin/sh -c "dockerize -wait tcp://db:5432 -timeout 30s && /app"

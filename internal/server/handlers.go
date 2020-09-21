@@ -14,7 +14,6 @@ import (
 )
 
 const badRequestMessage = "Некорректные входные данные"
-const accountNotFoundMessage = "Аккаунт не найден"
 const internalErrorMessage = "Внутренняя ошибка сервера"
 const insufficientFundsMessage = "Недостаточно средств на счету"
 const nullSumMessage = "Нулевая сумма пополнения"
@@ -25,22 +24,18 @@ func aliveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 //accountById - возврат информации об аккаунте
-func accountById(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
+func accountBalanceById(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ids := mux.Vars(r)["id"]
 		id, err := strconv.Atoi(ids)
 		if err != nil {
-			makeErrResponce(badRequestMessage, http.StatusBadRequest, w)
+			makeErrResponce(fmt.Sprintf(badRequestMessage+": Поле id должно быть числовым целочисленным типом больше 0."), http.StatusBadRequest, w)
 			return
 		}
 
 		acc, custErr := accStorage.GetAccountBalance(id)
 		if custErr != nil {
-			if custErr.ErrCode == model.AccountNotExistsCode {
-				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
-			} else {
-				makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
-			}
+			makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
 			log.Print(custErr.Err.Error())
 			return
 		}
@@ -48,12 +43,14 @@ func accountById(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 		currency := strings.ToUpper(r.FormValue("currency"))
 		respMessage := accountByIdResponse{Id: acc.AccountId, Balance: acc.Balance, Currency: defaultCurrency}
 		if currency != "" {
-			balanceInCurrency, err := convert.ConvertToCurrency(acc.Balance, currency, convert.UpdaterStruct{})
+			balanceInCurrency, err := convert.ConvertToCurrency(acc.Balance, currency, &convert.ConvertDataStorerStruct{})
 			if err == nil {
 				respMessage.Balance = balanceInCurrency
 				respMessage.Currency = currency
 			} else {
+				makeErrResponce("Не удалось предоставить информацию для выбранного курса валюты", http.StatusInternalServerError, w)
 				log.Print(err.Error())
+				return
 			}
 		}
 		resp, _ := json.Marshal(respMessage)
@@ -64,7 +61,7 @@ func accountById(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 
 //changeAccBalance - выполняет пополнение аккаунта на delta
 //Пример тела запроса: {"Id":1,"Delta":-200}
-func changeAccBalance(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) http.HandlerFunc {
+func changeAccountBalance(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		changeRequest := &changeAccBalanceRequest{}
 		err := json.NewDecoder(r.Body).Decode(changeRequest)
@@ -77,55 +74,19 @@ func changeAccBalance(accStorage model.IBalanceInfoStorage, logger model.ITransa
 			return
 		}
 
-		isChanged, custErr := accStorage.ChangeAccountBalance(changeRequest.Id, changeRequest.Delta)
-		var userMessage string
+		successMessage, custErr := accStorage.ChangeAccountBalance(changeRequest.Id, changeRequest.Delta)
 
-		//Логирование
-		defer func() {
-			operationLog := model.Log{
-				UserLog: model.UserLog{
-					AccountId:          changeRequest.Id,
-					Delta:              changeRequest.Delta,
-					LogUserMessage:     userMessage,
-					OperationCompleted: true,
-				},
-			}
-			if custErr != nil {
-				if custErr.ErrCode == model.AccountNotExistsCode {
-					return
-				} else {
-					operationLog.LogInternalMessage = custErr.Err.Error()
-					operationLog.OperationCompleted = false
-				}
-			}
-			err = logger.CreateNewLog(operationLog)
-			if err != nil {
-				log.Printf("changeAccBalance: не удалось логировать %v. Ошибка %v", operationLog, err)
-				return
-			}
-		}()
-
-		if !isChanged && custErr != nil {
-			if custErr.ErrCode == model.AccountNotExistsCode {
-				userMessage = accountNotFoundMessage
-				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
-			} else if custErr.ErrCode == model.InsufficientFundsCode {
-				userMessage = insufficientFundsMessage
+		if custErr != nil {
+			if custErr.ErrCode == model.InsufficientFundsCode {
 				makeErrResponce(insufficientFundsMessage, http.StatusForbidden, w)
 			} else {
-				userMessage = internalErrorMessage
 				makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
 			}
 			log.Print(custErr.Err.Error())
 			return
 		}
 
-		if changeRequest.Delta >= 0 {
-			userMessage = fmt.Sprintf("Аккаунт %d успешно пополнен на сумму %.2f руб.", changeRequest.Id, changeRequest.Delta)
-		} else {
-			userMessage = fmt.Sprintf("С аккаунта %d успешно снята сумма %.2f руб.", changeRequest.Id, -changeRequest.Delta)
-		}
-		respMessage := changeAccBalanceResponse{Message: userMessage}
+		respMessage := changeAccBalanceResponse{Message: successMessage}
 		resp, _ := json.Marshal(respMessage)
 		w.Header().Set("content-type", "application/json")
 		w.Write(resp)
@@ -134,7 +95,7 @@ func changeAccBalance(accStorage model.IBalanceInfoStorage, logger model.ITransa
 
 //transferSum - выполняет перевод суммы между аккаунтами
 //пример тела запроса: {"Id1":1,"Id2":3,"Delta":-20}
-func transferSum(accStorage model.IBalanceInfoStorage, logger model.ITransactionLogger) http.HandlerFunc {
+func transferSum(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		transferRequest := &transferSumRequest{}
 		err := json.NewDecoder(r.Body).Decode(transferRequest)
@@ -151,100 +112,51 @@ func transferSum(accStorage model.IBalanceInfoStorage, logger model.ITransaction
 			return
 		}
 
-		isTransfered, custErr := accStorage.TransferSumBetweenAccounts(transferRequest.Id1, transferRequest.Id2, transferRequest.Delta)
-		var userMessage string
+		transactionMessage, custErr := accStorage.TransferSumBetweenAccounts(transferRequest.Id1, transferRequest.Id2, transferRequest.Delta)
 
-		//логирование
-		defer func() {
-			operationLog1 := model.Log{
-				UserLog: model.UserLog{
-					AccountId:          transferRequest.Id1,
-					Delta:              -transferRequest.Delta,
-					LogUserMessage:     userMessage,
-					OperationCompleted: true,
-				},
-			}
-			operationLog2 := model.Log{
-				UserLog: model.UserLog{
-					AccountId:          transferRequest.Id2,
-					Delta:              transferRequest.Delta,
-					LogUserMessage:     userMessage,
-					OperationCompleted: true,
-				},
-			}
-			if custErr != nil {
-				if custErr.ErrCode == model.AccountNotExistsCode {
-					return
-				} else {
-					operationLog1.LogInternalMessage, operationLog2.LogInternalMessage = custErr.Err.Error(), custErr.Err.Error()
-					operationLog1.OperationCompleted, operationLog2.OperationCompleted = false, false
-				}
-			}
-			err = logger.CreateNewLog(operationLog1)
-			if err != nil {
-				log.Printf("transferSum: не удалось логировать %v. Ошибка %v", operationLog1, err)
-				return
-			}
-			err = logger.CreateNewLog(operationLog2)
-			if err != nil {
-				log.Printf("transferSum: не удалось логировать %v. Ошибка %v", operationLog1, err)
-				return
-			}
-		}()
-
-		if !isTransfered && custErr != nil {
-			if custErr.ErrCode == model.AccountNotExistsCode {
-				userMessage = accountNotFoundMessage
-				makeErrResponce(accountNotFoundMessage, http.StatusNotFound, w)
-			} else if custErr.ErrCode == model.InsufficientFundsCode {
-				userMessage = insufficientFundsMessage
+		if custErr != nil {
+			if custErr.ErrCode == model.InsufficientFundsCode {
 				makeErrResponce(insufficientFundsMessage, http.StatusForbidden, w)
 			} else {
-				userMessage = internalErrorMessage
 				makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
 			}
 			log.Print(custErr.Err.Error())
 			return
 		}
-
-		if transferRequest.Delta >= 0 {
-			userMessage = fmt.Sprintf("Перевод на сумму %.2f с аккаунта %d на аккаунт %d выполнен успешно.", transferRequest.Delta, transferRequest.Id1, transferRequest.Id2)
-		} else {
-			userMessage = fmt.Sprintf("Перевод на сумму %.2f с аккаунта %d на аккаунт %d выполнен успешно.", -transferRequest.Delta, transferRequest.Id2, transferRequest.Id1)
-		}
-		respMessage := transferSumResponce{Message: userMessage}
+		respMessage := transferSumResponce{Message: transactionMessage}
 		resp, _ := json.Marshal(respMessage)
 		w.Header().Set("content-type", "application/json")
 		w.Write(resp)
 	}
 }
 
-//operationsInfo - выводит историю операций по аккаунту
-//пример тела запроса {"Params": {"user_id":1,"operation_completed":true,"order_date":"asc","order_sum":"desc"}}
-func operationsInfo(logger model.ITransactionLogger) http.HandlerFunc {
+//transactionsHistory - выводит историю операций по аккаунту
+//пример тела запроса {"Id":3,"SortedBy":"transaction_sum","SortedByDesc":true}
+func transactionsHistory(accStorage model.IBalanceInfoStorage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		operationsInfoRequest := &operationsInfoRequest{}
+		operationsInfoRequest := &transactionsHistoryRequest{}
 		err := json.NewDecoder(r.Body).Decode(operationsInfoRequest)
 		if err != nil {
 			makeErrResponce(badRequestMessage, http.StatusBadRequest, w)
 			return
 		}
 
-		logs, err, wrongInput := logger.GetUserLogsFiltered(operationsInfoRequest.FilterParams)
-		if err != nil {
-			if wrongInput {
+		history, custErr := accStorage.GetSortedTransactionsHistory(operationsInfoRequest.Id, operationsInfoRequest.SortedBy, operationsInfoRequest.SortedByDesc)
+		if custErr != nil {
+			if custErr.ErrCode == model.WrongInputParamsCode {
 				makeErrResponce(badRequestMessage, http.StatusBadRequest, w)
-				return
 			} else {
 				makeErrResponce(internalErrorMessage, http.StatusInternalServerError, w)
-				return
 			}
+			log.Print(custErr.Err.Error())
+			return
 		}
-		if len(logs) == 0 {
+
+		if len(history) == 0 {
 			makeErrResponce("Отсутсвуют записи по выбранным условиям поиска", http.StatusNotFound, w)
 			return
 		}
-		resp, _ := json.Marshal(logs)
+		resp, _ := json.Marshal(history)
 		w.Header().Set("content-type", "application/json")
 		w.Write(resp)
 	}

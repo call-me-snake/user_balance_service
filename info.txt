@@ -1,2 +1,3 @@
-//mockgen
-//mockgen "-source=internal/convert/convert.go" "-destination=internal/convert/mock/mock_updater.go"
+mockgen
+//mockgen "-source=internal/convert/convert.go" "-destination=internal/convert/mock/mock_storer.go"
+//mockgen "-source=internal/model/model.go" "-destination=internal/model/mock/mock_IBalanceInfoStorage.go"

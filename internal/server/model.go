@@ -30,8 +30,10 @@ type transferSumResponce struct {
 	Message string `json:"Message"`
 }
 
-type operationsInfoRequest struct {
-	FilterParams map[string]interface{} `json:"Params"`
+type transactionsHistoryRequest struct {
+	Id           int    `json:"Id"`
+	SortedBy     string `json:"SortedBy,omitempty"`
+	SortedByDesc bool   `json:"SortedByDesc,omitempty"`
 }
 
 type errorResponce struct {
