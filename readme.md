@@ -2,7 +2,11 @@
 
 *Сервис работает с балансом пользователей и имеет ручки:*
 
+<<<<<<< HEAD
 -   Получение информации о балансе<br/>
+=======
+-   Получение информации о балансе</br>
+>>>>>>> b7b07d3081a9dd277aacf3322286e08497d99b63
 Request:
 [GET] /account/balance/info/{id:[0-9]+}?currency=CUR
 
@@ -21,7 +25,11 @@ Responce:
 }
 </pre>
 
+<<<<<<< HEAD
 -   Изменение баланса<br/>
+=======
+-   Изменение баланса</br>
+>>>>>>> b7b07d3081a9dd277aacf3322286e08497d99b63
 Request:
 [POST] /account/balance/change
 <pre>
@@ -45,7 +53,11 @@ Responce:
 }
 </pre>
 
+<<<<<<< HEAD
 -   Перевод между счетами<br/>
+=======
+-   Перевод между счетами</br>
+>>>>>>> b7b07d3081a9dd277aacf3322286e08497d99b63
 Request:
 [POST] /account/balance/transfer
 <pre>
@@ -70,7 +82,11 @@ Responce:
 }
 </pre>
 
+<<<<<<< HEAD
 -   История транзакций<br/>
+=======
+-   История транзакций</br>
+>>>>>>> b7b07d3081a9dd277aacf3322286e08497d99b63
 Request:
 [POST] /account/balance/history
 
