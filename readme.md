@@ -21,7 +21,7 @@ Responce:
 }
 </pre>
 
--   Изменение баланса
+-   Изменение баланса</br>
 Request:
 [POST] /account/balance/change
 <pre>
@@ -45,7 +45,7 @@ Responce:
 }
 </pre>
 
--   Перевод между счетами
+-   Перевод между счетами</br>
 Request:
 [POST] /account/balance/transfer
 <pre>
@@ -70,7 +70,7 @@ Responce:
 }
 </pre>
 
--   История транзакций
+-   История транзакций</br>
 Request:
 [POST] /account/balance/history
 
