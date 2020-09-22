@@ -112,3 +112,5 @@ Responce:
 -   docker build –t postgr_balance_storage_img docker_storage
 -   docker build -t user_balance_service_img .
 -   docker-compose up
+
+*Предполагается, что ручки используются из-за firewall, и недоступны простому пользователю.*
