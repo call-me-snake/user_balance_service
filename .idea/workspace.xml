@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="b1f1658e-2414-4b90-81b8-60f4b3046dca" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="ProjectId" id="1jNqOnHZ0qYuqVz3Wl9Mbg9Ocb0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="postgresql" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
+    <property name="go.tried.to.enable.integration.dep.integrator" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="299" y="405" width="1384" height="304" key="#SQL_Dialects" timestamp="1603800844731">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="299" y="405" width="1384" height="304" key="#SQL_Dialects/72.27.1848.1053@72.27.1848.1053" timestamp="1603800844731" />
+    <state x="518" y="199" width="1077" height="684" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1603807976628">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="518" y="199" width="1077" height="684" key="#com.intellij.execution.impl.EditConfigurationsDialog/72.27.1848.1053@72.27.1848.1053" timestamp="1603807976628" />
+    <state width="263" height="514" key="HiddenNamespacesPopup" timestamp="1603801375784">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state width="263" height="514" key="HiddenNamespacesPopup/72.27.1848.1053@72.27.1848.1053" timestamp="1603801375784" />
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup" timestamp="1603807097068">
+      <screen x="72" y="27" width="1848" height="1053" />
+    </state>
+    <state x="659" y="259" width="672" height="678" key="search.everywhere.popup/72.27.1848.1053@72.27.1848.1053" timestamp="1603807097068" />
+  </component>
+</project>
